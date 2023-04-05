@@ -1,11 +1,16 @@
 import React from 'react'
 import { useState } from 'react'
 
+import { ethers }  from "ethers";
 
 
 export default function Navbar() {
 
   const [ walletAddress, setWalletAddress] = useState("")
+  const [ provider, setProvider ] = useState(null)
+  const [ signer, setSigner ] = useState(null)
+  const [ btnText, setBtnText ] = useState("Connect Wallet")
+  const [ contract, setContract] = useState(null)
 
   async function requestAccount() {
     console.log('requesting Account ...')
@@ -24,6 +29,7 @@ export default function Navbar() {
         
         console.log("%cSuccessfully Connected to Wallet ✅", 'color: lightgreen; font-weight:bold;')
         setWalletAddress(accounts[0])
+        setBtnText("Wallet Connected")
         console.log(`%cAccounts: ${accounts}`, 'color: purple; font-weight:bold;')
       }catch(err) { console.log(err) }
     }else{
@@ -31,6 +37,18 @@ export default function Navbar() {
     }
   }
 
+  async function connectWallet() {
+    if(typeof window.ethereum != 'undefined'){
+      await requestAccount()
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      setProvider(provider)
+      const temp_signer = (await provider.getSigner(0))
+      setSigner(signer)
+      const temp_contract = await new ethers.Contract(contractAddress, contractABI, temp_signer);
+      setContract(temp_contract)
+      await temp_contract.getBalance()
+    }
+  }
 
   return (
   <nav>
@@ -48,7 +66,8 @@ export default function Navbar() {
         </li>
     </div>
     <li className='icons'>
-      <button onClick={requestAccount}>Connect Wallet</button>
+      {/* <button onClick={requestAccount}>Request Account</button> */}
+      <button onClick={connectWallet}>{btnText}</button>
     </li>
   </nav>
   )

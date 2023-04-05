@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OpenPose.js Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet@2.2.5/dist/posenet.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@openpose/core@2.0.0/dist/openpose.min.js"></script>
+</head>
+<body>
+    <video id="video" width="640" height="480"></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <script>
+        async function setupCamera() {
+            const video = document.getElementById('video');
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: 640, height: 480 },
+                audio: false
+            });
+            video.srcObject = stream;
+            await video.play();
+            return video;
+        }
+
+        function setupCanvas() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            return { canvas, ctx };
+        }
+
+        async function estimatePose(openpose, image) {
+            const pose = await openpose.estimatePoseOnImage(image);
+            return pose;
+        }
+
+        async function renderPose(canvas, ctx, pose) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(pose.image, 0, 0, canvas.width, canvas.height);
+            pose.keypoints.forEach(({ position }) => {
+                ctx.beginPath();
+                ctx.arc(position.x, position.y, 5, 0, 2 * Math.PI);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+            });
+        }
+
+        async function main() {
+            const video = await setupCamera();
+            const { canvas, ctx } = setupCanvas();
+            const openpose = await openpose.load({
+                netInputSize: 320,
+                enableFace: false,
+                enableHands: false
+            });
+            const pose = await estimatePose(openpose, video);
+            renderPose(canvas, ctx, pose);
+            requestAnimationFrame(main);
+        }
+
+        main();
+    </script>
+</body>
+</html>
