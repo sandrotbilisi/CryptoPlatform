@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { ethers } from 'ethers';
-import { contractContext, providerContext } from '../App'
-
+import React, { useState, useEffect, useContext } from "react";
+import { ethers } from "ethers";
+import { contractContext, providerContext } from "../App";
 
 function App() {
-  const [provider, setProvider] = useContext(providerContext)
+  const [provider, setProvider] = useContext(providerContext);
   const [contract, setContract] = useContext(contractContext);
   const [parts, setParts] = useState([]);
   const [selectedPart, setSelectedPart] = useState(null);
@@ -12,7 +11,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  console.log(contract)
+  console.log(contract);
 
   useEffect(() => {
     const loadParts = async () => {
@@ -26,7 +25,7 @@ function App() {
             name: part.name,
             price: ethers.formatEther(part.price),
             quantity: part.quantity.toString(),
-            seller: part.seller
+            seller: part.seller,
           });
         }
         setParts(parts);
@@ -46,13 +45,17 @@ function App() {
   const handlePurchase = async () => {
     setLoading(true);
     try {
-      const tx = await contract.purchasePart(selectedPart.id, quantity, { value: ethers.parseEther(String(selectedPart.price * quantity)) });
+      const tx = await contract.purchasePart(selectedPart.id, quantity, {
+        value: ethers.parseEther(String(selectedPart.price * quantity)),
+      });
       await tx.wait();
       setSelectedPart(null);
       setQuantity(1);
     } catch (error) {
       console.error(error);
-      setError('An error occurred while purchasing the part. Please try again.');
+      setError(
+        "An error occurred while purchasing the part. Please try again."
+      );
     }
     setLoading(false);
   };
@@ -72,29 +75,63 @@ function App() {
               <p>Quantity available: {selectedPart.quantity}</p>
               <label>
                 Quantity:
-                <input type="number" min="1" value={quantity} onChange={handleQuantityChange} />
+                <input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={handleQuantityChange}
+                />
               </label>
               <button onClick={handlePurchase} disabled={loading}>
-                {loading ? 'Purchasing...' : 'Purchase'}
+                {loading ? "Purchasing..." : "Purchase"}
               </button>
             </>
-          ) : ( 
-			<>
-<h2>Parts Available</h2>
-<ul>
-{parts.map((part) => (
-<li key={part.id} onClick={() => handlePartSelect(part)}>
-<strong>{part.name}</strong> ({part.price} ETH)
-</li>
-))}
-</ul>
-</>
-)}
-</>
-)}
-</div>
-);
+          ) : (
+            <>
+              <h2>Parts Available</h2>
+              <div style={{ display: "flex" }}>
+                {parts.map((part) => (
+                  <li key={part.id} onClick={() => handlePartSelect(part)}>
+                    <div
+                      style={{
+                        width: 300,
+                        backgroundColor: "#1c1c1c",
+                        boxShadow: "1px 2px 9px #F4AAB9",
+                        borderRadius: 5,
+                        padding: 20,
+                        margin: 10,
+                        border: "1px solid #F4AAB9",
+                        boxSizing: "border-box",
+                        cursor: "pointer"
+                      }}
+                    >
+                      <img
+                        src={"https://www.computerhope.com/jargon/m/motherboard-small.png"}
+                        alt={part.name}
+                        style={{
+                          width: "100%",
+                          height: 200,
+                          objectFit: "contain",
+                        }}
+                      />
+                      <p style={{ fontWeight: "bold", fontSize: 20 }}>
+                        {part.name}
+                      </p>
+                      <hr style={{ marginBottom: 10 }} />
+                      <p style={{ fontSize: 16 }}>{part.description}</p>
+                      <p style={{ marginTop: 10 }}>
+                        <strong>Price:</strong> {part.price} ETH
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 export default App;
-
