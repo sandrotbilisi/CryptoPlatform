@@ -1,74 +1,74 @@
-import React from 'react'
-import { useState } from 'react'
+import React from 'react';
+import { useState, useContext, createContext, useEffect } from 'react';
+import { ethers } from 'ethers';
+import PCPartsMarketplace from './contracts/PCPartsMarketplace.json';
 
-import { ethers }  from "ethers";
+import mysql from 'mysql';
+import { providerContext, contractContext } from '../App';
+
+
 
 
 export default function Navbar() {
+  const [contract, setContract] = useContext(contractContext)
+  const [provider, setProvider] = useContext(providerContext)
 
-  const [ walletAddress, setWalletAddress] = useState("")
-  const [ provider, setProvider ] = useState(null)
-  const [ signer, setSigner ] = useState(null)
-  const [ btnText, setBtnText ] = useState("Connect Wallet")
-  const [ contract, setContract] = useState(null)
 
+  useEffect(() => {
+    const initializeContract = async () => {
+      if (provider) {
+        const contractAddress = '0xB748AcC151858492c46ca81cefb730f9D2a6cAdD';
+        const signer = (await provider.getSigner(0));
+        const contract = new ethers.Contract(contractAddress, PCPartsMarketplace.abi, signer);
+        setContract(contract);
+      }
+    };
+    initializeContract();
+  }, [provider]);
+  
   async function requestAccount() {
-    console.log('requesting Account ...')
 
     // Check if Metamask is Installed
 
-    if(window.ethereum)
-    {
-      console.log("%cMetamask Found ✅", 'color: lightgreen; font-weight:bold;')
-      
-      console.log("%cConnecting To Wallet ...", 'color: gray; font-weight:bold;')
-      try{
+    if (window.ethereum) {
+      try {
         const accounts = await window.ethereum.request({
           method: 'eth_requestAccounts'
-        })
-        
-        console.log("%cSuccessfully Connected to Wallet ✅", 'color: lightgreen; font-weight:bold;')
-        setWalletAddress(accounts[0])
-        setBtnText("Wallet Connected")
-        console.log(`%cAccounts: ${accounts}`, 'color: purple; font-weight:bold;')
-      }catch(err) { console.log(err) }
-    }else{
-      console.log("%cMetamask Not Found ❌", 'color: red; font-weight:bold;')
+        });
+        console.log(accounts[0]);
+      } catch (err) {
+        console.log(err);
+      }
     }
   }
 
   async function connectWallet() {
-    if(typeof window.ethereum != 'undefined'){
-      await requestAccount()
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount();
       const provider = new ethers.BrowserProvider(window.ethereum);
       setProvider(provider)
-      const temp_signer = (await provider.getSigner(0))
-      setSigner(signer)
-      const temp_contract = await new ethers.Contract(contractAddress, contractABI, temp_signer);
-      setContract(temp_contract)
-      await temp_contract.getBalance()
+
     }
   }
-
   return (
-  <nav>
-    <span className="yve">✨PcPartso✨</span>
-    <div className='center'>
-        <li>
-          {/* <Link to={'explore'}>მაღაზია</Link> */}
-          <a href="#">Home</a>
-        </li>
-        <li>
-          <a href="#">Shop</a>
-        </li>
-        <li>
-          <a href="#">About Us</a>
-        </li>
-    </div>
-    <li className='icons'>
-      {/* <button onClick={requestAccount}>Request Account</button> */}
-      <button onClick={connectWallet}>{btnText}</button>
-    </li>
-  </nav>
-  )
+    <nav>
+      <span className="yve">✨PcPartso✨</span>
+      <div className='center'>
+          <li>
+            {/* <Link to={'explore'}>მაღაზია</Link> */}
+            <a href="#">Home</a>
+          </li>
+          <li>
+            <a href="#">Shop</a>
+          </li>
+          <li>
+            <a href="#">About Us</a>
+          </li>
+      </div>
+      <li className='icons'>
+        {/* <button onClick={requestAccount}>Request Account</button> */}
+        <button onClick={() => {connectWallet()}}>{provider ? "Logout" : "Login"}</button>
+      </li>
+    </nav>
+  );
 }

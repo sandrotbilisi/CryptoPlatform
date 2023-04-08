@@ -1,48 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { ethers } from 'ethers';
-import PCPartsMarketplace from './contracts/PCPartsMarketplace.json';
+import { contractContext, providerContext } from '../App'
+
 
 function App() {
-  const [provider, setProvider] = useState(null);
-  const [contract, setContract] = useState(null);
+  const [provider, setProvider] = useContext(providerContext)
+  const [contract, setContract] = useContext(contractContext);
   const [parts, setParts] = useState([]);
   const [selectedPart, setSelectedPart] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Initialize provider
-    const initializeProvider = async () => {
-      if (window.ethereum) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-		// await window.ethereum.request({
-		// 	method: "eth_requestAccounts"
-		// })
-        // await provider.send('eth_requestAccounts', []);
-        setProvider(provider);
-      } else {
-        setError('Please install MetaMask to use this application');
-      }
-    };
-    initializeProvider();
-  }, []);
+  console.log(contract)
 
   useEffect(() => {
-    // Initialize contract
-    const initializeContract = async () => {
-      if (provider) {
-        const contractAddress = '0xB748AcC151858492c46ca81cefb730f9D2a6cAdD';
-        const signer = (await provider.getSigner(0));
-        const contract = new ethers.Contract(contractAddress, PCPartsMarketplace.abi, signer);
-        setContract(contract);
-      }
-    };
-    initializeContract();
-  }, [provider]);
-
-  useEffect(() => {
-    // Load parts
     const loadParts = async () => {
       if (contract) {
         const partsCount = await contract.partsCount();
