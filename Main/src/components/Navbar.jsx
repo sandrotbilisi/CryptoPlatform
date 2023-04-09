@@ -1,39 +1,39 @@
-import React from 'react';
-import { useState, useContext, createContext, useEffect } from 'react';
-import { ethers } from 'ethers';
-import PCPartsMarketplace from './contracts/PCPartsMarketplace.json';
+import React from "react";
+import { ethers } from "ethers";
+import { useState, useContext, createContext, useEffect } from "react";
+import { Outlet, Link } from "react-router-dom";
+import PCPartsMarketplace from "./contracts/PCPartsMarketplace.json";
 
-import mysql from 'mysql';
-import { providerContext, contractContext } from '../App';
-
-
-
+import mysql from "mysql";
+import { providerContext, contractContext } from "../App";
 
 export default function Navbar() {
-  const [contract, setContract] = useContext(contractContext)
-  const [provider, setProvider] = useContext(providerContext)
-
+  const [contract, setContract] = useContext(contractContext);
+  const [provider, setProvider] = useContext(providerContext);
 
   useEffect(() => {
     const initializeContract = async () => {
       if (provider) {
-        const contractAddress = '0xB748AcC151858492c46ca81cefb730f9D2a6cAdD';
-        const signer = (await provider.getSigner(0));
-        const contract = new ethers.Contract(contractAddress, PCPartsMarketplace.abi, signer);
+        const contractAddress = "0xB748AcC151858492c46ca81cefb730f9D2a6cAdD";
+        const signer = await provider.getSigner(0);
+        const contract = new ethers.Contract(
+          contractAddress,
+          PCPartsMarketplace.abi,
+          signer
+        );
         setContract(contract);
       }
     };
     initializeContract();
   }, [provider]);
-  
-  async function requestAccount() {
 
+  async function requestAccount() {
     // Check if Metamask is Installed
 
     if (window.ethereum) {
       try {
         const accounts = await window.ethereum.request({
-          method: 'eth_requestAccounts'
+          method: "eth_requestAccounts",
         });
         console.log(accounts[0]);
       } catch (err) {
@@ -43,32 +43,37 @@ export default function Navbar() {
   }
 
   async function connectWallet() {
-    if (typeof window.ethereum !== 'undefined') {
+    if (typeof window.ethereum !== "undefined") {
       await requestAccount();
       const provider = new ethers.BrowserProvider(window.ethereum);
-      setProvider(provider)
-
+      setProvider(provider);
     }
   }
   return (
     <nav>
       <span className="yve">✨PcPartso✨</span>
-      <div className='center'>
-          <li>
-            {/* <Link to={'explore'}>მაღაზია</Link> */}
-            <a href="#">Home</a>
-          </li>
-          <li>
-            <a href="#">Shop</a>
-          </li>
-          <li>
-            <a href="#">About Us</a>
-          </li>
+      <div className="center">
+        <li>
+          <Link to={"/"}>Home</Link>
+        </li>
+        <li>
+          <Link to={"/Shop"}>Shop</Link>
+        </li>
+        <li>
+          <Link to={"/create"}>Create</Link>
+        </li>
       </div>
-      <li className='icons'>
+      <li className="icons">
         {/* <button onClick={requestAccount}>Request Account</button> */}
-        <button onClick={() => {connectWallet()}}>{provider ? "Logout" : "Login"}</button>
+        <button
+          onClick={() => {
+            connectWallet();
+          }}
+        >
+          {provider ? "Logout" : "Login"}
+        </button>
       </li>
+      {/* <Outlet /> */}
     </nav>
   );
 }

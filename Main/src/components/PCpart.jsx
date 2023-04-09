@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, createContext } from "react";
 import { ethers } from "ethers";
-import { contractContext, providerContext } from "../App";
+import { contractContext, providerContext, partsContext } from "../App";
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+
 
 function App() {
   const [provider, setProvider] = useContext(providerContext);
   const [contract, setContract] = useContext(contractContext);
-  const [parts, setParts] = useState([]);
+  const [parts, setParts] = useContext(partsContext);
   const [selectedPart, setSelectedPart] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  console.log(contract);
 
   useEffect(() => {
     const loadParts = async () => {
@@ -29,6 +30,7 @@ function App() {
           });
         }
         setParts(parts);
+        console.log(parts)
       }
     };
     loadParts();
@@ -89,8 +91,10 @@ function App() {
           ) : (
             <>
               <h2>Parts Available</h2>
-              <div style={{ display: "flex" }}>
+              <div style={{ display: "flex", listStyleType: "none" }}>
                 {parts.map((part) => (
+                  <Link to={`/parts/${part.id}`}>
+
                   <li key={part.id} onClick={() => handlePartSelect(part)}>
                     <div
                       style={{
@@ -104,7 +108,7 @@ function App() {
                         boxSizing: "border-box",
                         cursor: "pointer"
                       }}
-                    >
+                      >     
                       <img
                         src={"https://www.computerhope.com/jargon/m/motherboard-small.png"}
                         alt={part.name}
@@ -113,7 +117,7 @@ function App() {
                           height: 200,
                           objectFit: "contain",
                         }}
-                      />
+                        />
                       <p style={{ fontWeight: "bold", fontSize: 20 }}>
                         {part.name}
                       </p>
@@ -124,12 +128,14 @@ function App() {
                       </p>
                     </div>
                   </li>
+                  </Link>
                 ))}
               </div>
             </>
           )}
         </>
       )}
+      
     </div>
   );
 }
